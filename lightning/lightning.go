@@ -12,7 +12,7 @@ type PaymentResult struct {
 }
 
 type Lightning interface {
-	Invoice(msat int64, desc string) (checkingId string)
+	Invoice(msat int64, desc string) (bolt11 string, checkingId string)
 	CheckInvoice(checkingId string) (result *InvoiceResult)
 	ListenInvoices() chan InvoiceResult
 

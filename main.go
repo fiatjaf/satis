@@ -136,7 +136,11 @@ func main() {
 				}
 				b.set(cmd.Args[1], next)
 
-				go payInvoice(account, bolt11, inv.MSatoshi)
+				go func() {
+					checkingId := lightning.Pay(bolt11)
+					store.SavePendingPayment(account, checkingId, msat)
+				}()
+
 				conn.WriteString("OK")
 				go b.persist(cmd.Args[1])
 			case "invoice":
@@ -145,11 +149,13 @@ func main() {
 					return
 				} else {
 					account := string(cmd.Args[1])
+					desc := string(cmd.Args[3])
+					bolt11, checkingId, err := lightning.Invoice(msat, desc)
 
-					if bolt11, err := makeInvoice(
-						account, msat, string(cmd.Args[3])); err != nil {
+					if err != nil {
 						conn.WriteError("ERR failed: '" + err.Error() + "'")
 					} else {
+						store.SavePendingInvoice(account, checkingId)
 						conn.WriteString(bolt11)
 					}
 				}

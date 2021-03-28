@@ -1,10 +1,14 @@
 package main
 
-import "github.com/fiatjaf/satis/lightning/sparko"
+import (
+	"github.com/fiatjaf/satis/lightning/sparko"
+)
 
 func initializeLightning() {
 	lightning = &sparko.Client{
-		URL:   s.SparkoURL,
-		Token: s.SparkoToken,
+		Client: {
+			SparkURL:   s.SparkoURL,
+			SparkToken: s.SparkoToken,
+		},
 	}
 }
