@@ -57,9 +57,15 @@ func (fd *FileDatabase) GetBalances() (balances map[string]int64, err error) {
 	return balances, err
 }
 
-func (fd *FileDatabase) SavePendingPayment(account string, checkingId string) error {
+func (fd *FileDatabase) SavePendingPayment(
+	account string,
+	checkingId string,
+	msat int64,
+) error {
 	return fd.db.Update(func(tx *buntdb.Tx) error {
-		_, _, err := tx.Set("p:"+account+":"+checkingId, "", nil)
+		_, _, err := tx.Set("p:"+checkingId,
+			fmt.Sprintf(`{"c":"%s","a":%d}`, checkingId, msat),
+			nil)
 		return err
 	})
 }

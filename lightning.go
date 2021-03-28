@@ -7,7 +7,7 @@ func makeInvoice(account string, msat int64, desc string) (bolt11 string, err er
 	return "", nil
 }
 
-func payInvoice(account string, bolt11 string) {
+func payInvoice(account string, bolt11 string, msat int64) {
 	checkingId := lightning.Pay(bolt11)
-	store.SavePendingPayment(account, checkingId)
+	store.SavePendingPayment(account, checkingId, msat)
 }

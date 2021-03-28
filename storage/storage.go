@@ -6,7 +6,7 @@ type Storage interface {
 	SetBalance(account string, msat int64) error
 	GetBalances() (balances map[string]int64, err error)
 
-	SavePendingPayment(account string, checkingId string) error
+	SavePendingPayment(account string, checkingId string, msat int64) error
 	SavePendingInvoice(account string, checkingId string) error
 	GetPendingLightning(
 		payments map[string][]string,

@@ -1,9 +1,22 @@
 package lightning_interface
 
-type Lightinng interface {
-	Invoice(msat int64, desc string) (checkingId string)
-	Pay(bolt11 string) (checkingId string)
+type InvoiceResult struct {
+	CheckingId string
+	Amount     int64
+	Result     bool
+}
 
-	ListenInvoices()
-	ListenPayments()
+type PaymentResult struct {
+	CheckingId string
+	Result     bool
+}
+
+type Lightning interface {
+	Invoice(msat int64, desc string) (checkingId string)
+	CheckInvoice(checkingId string) (result *InvoiceResult)
+	ListenInvoices() chan InvoiceResult
+
+	Pay(bolt11 string) (checkingId string)
+	CheckPayment(checkingId string) (result *PaymentResult)
+	ListenPayments() chan InvoiceResult
 }

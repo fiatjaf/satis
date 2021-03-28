@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	decodepay "github.com/fiatjaf/ln-decodepay"
 	storage_interface "github.com/fiatjaf/satis/storage"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/tidwall/redcon"
@@ -17,8 +18,9 @@ type Settings struct {
 }
 
 var (
-	s     Settings
-	store storage_interface.Storage
+	s         Settings
+	store     storage_interface.Storage
+	lightning lightning_interface.Lightning
 
 	ps redcon.PubSub
 )
@@ -29,8 +31,8 @@ func main() {
 		panic(err)
 	}
 
-	// initialize storage
 	initializeStorage()
+	initializeLightning()
 
 	go log.Printf("started server at %s", s.Port)
 
@@ -121,7 +123,20 @@ func main() {
 			case "pay":
 				account := string(cmd.Args[1])
 				bolt11 := string(cmd.Args[2])
-				go payInvoice(account, bolt11)
+				inv, err := decodepay.Decodepay(bolt11)
+				if err != nil {
+					conn.WriteError("ERR invoice is invalid")
+					return
+				}
+
+				next := b.get(cmd.Args[1]) - inv.MSatoshi
+				if next < 0 {
+					conn.WriteError("ERR balance would go below 0")
+					return
+				}
+				b.set(cmd.Args[1], next)
+
+				go payInvoice(account, bolt11, inv.MSatoshi)
 				conn.WriteString("OK")
 				go b.persist(cmd.Args[1])
 			case "invoice":
